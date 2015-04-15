@@ -75,6 +75,9 @@ public:
 	*/
 	String GetName(void);
 
+	vector3 getCenter(void);
+	vector3 getSizes(void);
+
 	/*
 	GenerateOrientedBoundingBox
 		Creates the Axis Aligned Bounding Box in local space of the model specified in the instance name

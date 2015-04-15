@@ -158,7 +158,96 @@ void BoundingBoxManagerSingleton::CalculateCollision(void)
 				bColliding = false;
 
 			if(bColliding)
-				m_lColor[i] = m_lColor[j] = MERED; //We make the Boxes red
+			{
+				vector3 axis[] = {
+					vector3(1, 0, 0)
+					, vector3(0, 1, 0)
+					, vector3(0, 0, 1)
+				};
+				
+				auto rotate1 = glm::mat3(m_lMatrix[i]);
+				auto rotate2 = glm::mat3(m_lMatrix[j]);
+
+				vector3 axis1[3];
+				vector3 axis2[3];
+
+				for(int k = 0; k < 3; k++)
+				{
+					axis1[k] = glm::normalize(rotate1 * axis[k]);
+					axis2[k] = glm::normalize(rotate2 * axis[k]);
+				}
+
+				std::vector<vector3> testAxes;
+				
+				for(int k = 0; k < 3; k++)
+				{
+					testAxes.push_back(axis1[k]);
+					testAxes.push_back(axis2[k]);
+				}
+
+				for(int k = 0; k < 3; k++)
+				{
+					for(int l = 0; l < 3; l++)
+					{
+						if(glm::abs(axis1[k]) != glm::abs(axis2[l]))
+						{
+							testAxes.push_back(glm::normalize(glm::cross(axis1[k], axis2[l])));
+						}
+					}
+				}
+				
+				std::vector<vector3> box1Points;
+				std::vector<vector3> box2Points;
+
+				auto center1 = rotate1 * m_lBox[i]->GetCentroid() + vector3(m_lMatrix[i][3]);
+				auto center2 = rotate2 * m_lBox[j]->GetCentroid() + vector3(m_lMatrix[j][3]);
+				
+				auto sizes1 = m_lBox[i]->getSizes() / 2.0f;
+				auto sizes2 = m_lBox[j]->getSizes() / 2.0f;
+
+				for(int x = -1; x <= 1; x += 2) {
+					for(int y = -1; y <= 1; y += 2) {
+						for(int z = -1; z <= 1; z += 2) {
+							vector3 mult(x, y, z);
+							vector3 point1(0.0f, 0.0f, 0.0f), point2(0.0f, 0.0f, 0.0f);
+							for(int k = 0; k < 3; k++)
+							{
+								point1 += axis1[k] * (sizes1[k] * mult[k]);
+								point2 += axis2[k] * (sizes2[k] * mult[k]);
+							}
+							box1Points.push_back(point1);
+							box2Points.push_back(point2);
+						}
+					}
+				}
+
+				bColliding = true;
+
+				auto centerDiff = center2 - center1;
+
+				for(auto testAxis : testAxes)
+				{
+					auto dist = abs(glm::dot(testAxis, centerDiff));
+					auto halfDim1 = 0.0f;
+					for(auto p : box1Points)
+					{
+						halfDim1 = std::max(halfDim1, abs(glm::dot(p, testAxis)));
+					}
+					auto halfDim2 = 0.0f;
+					for(auto p : box2Points)
+					{
+						halfDim2 = std::max(halfDim2, abs(glm::dot(p, testAxis)));
+					}
+					if(dist > halfDim1 + halfDim2) {
+						bColliding = false;
+						// todo add axis to list of planes
+					}
+				}
+				if(bColliding){
+					m_lColor[i] = m_lColor[j] = MERED; //We make the Boxes red
+				}
+			}
+			
 		}
 	}
 }

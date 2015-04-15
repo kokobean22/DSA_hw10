@@ -49,6 +49,10 @@ vector3 BoundingBoxClass::GetMaximumOBB(void){ return m_v3Max; }
 vector3 BoundingBoxClass::GetMinimumAABB(void){ return m_v3MinG; }
 vector3 BoundingBoxClass::GetMaximumAABB(void){ return m_v3MaxG; }
 vector3 BoundingBoxClass::GetCentroid(void){ return m_v3Centroid; }
+
+vector3 BoundingBoxClass::getCenter(void) { return m_v3Centroid; }
+vector3 BoundingBoxClass::getSizes(void) { return m_v3Size; }
+
 String BoundingBoxClass::GetName(void){return m_sName;}
 //Methods
 void BoundingBoxClass::GenerateOrientedBoundingBox(String a_sInstanceName)
@@ -148,4 +152,5 @@ void BoundingBoxClass::AddAABBToRenderList(matrix4 a_m4ModelToWorld, vector3 a_v
 		vector3( 1.0f - a_vColor.x, 1.0f - a_vColor.y, 1.0f - a_vColor.z), MERENDER::WIRE);
 	vector3 v3CentroidGlobal = static_cast<vector3>(a_m4ModelToWorld * vector4(m_v3Centroid,1));
 	pMeshMngr->AddCubeToQueue(glm::translate(v3CentroidGlobal) * glm::scale(m_v3SizeAABB), a_vColor, MERENDER::WIRE);
+
 }
